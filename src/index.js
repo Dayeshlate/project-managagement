@@ -20,11 +20,9 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Routes
 app.use('/auth', authRoutes);
 app.use('/projects', projectRoutes);
 
-// 404 handler
 app.use((req, res) => {
   res.status(404).json({
     success: false,

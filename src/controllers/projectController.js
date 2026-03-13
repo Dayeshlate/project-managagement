@@ -1,31 +1,81 @@
 const { Project, User, DailyReport } = require('../models');
 const AppError = require('../utils/errors');
 
+const getUniqueAssignedIds = (assignedUserIds = []) => {
+  if (!Array.isArray(assignedUserIds)) {
+    return [];
+  }
+  return [...new Set(assignedUserIds.map(Number))];
+};
+
+const fetchAndValidateAssignedUsers = async (assignedUserIds, transaction) => {
+  if (!assignedUserIds.length) {
+    return [];
+  }
+
+  const users = await User.findAll({
+    where: { id: assignedUserIds },
+    transaction,
+  });
+
+  if (users.length !== assignedUserIds.length) {
+    throw new AppError('One or more assigned users were not found', 400);
+  }
+
+  return users;
+};
+
 const createProject = async (req, res, next) => {
   try {
-    const { name, description, startDate, endDate, budget, location } = req.body;
+    const { name, description, startDate, endDate, budget, location, assignedUserIds } = req.body;
     const createdBy = req.user.userId;
+    const uniqueAssignedIds = getUniqueAssignedIds(assignedUserIds);
 
     // Validate dates
     if (new Date(startDate) > new Date(endDate)) {
       throw new AppError('Start date must be before end date', 400);
     }
 
-    const project = await Project.create({
-      name,
-      description,
-      start_date: startDate,
-      end_date: endDate,
-      budget,
-      location,
-      created_by: createdBy,
+    const result = await Project.sequelize.transaction(async (transaction) => {
+      const project = await Project.create(
+        {
+          name,
+          description,
+          start_date: startDate,
+          end_date: endDate,
+          budget,
+          location,
+          created_by: createdBy,
+        },
+        { transaction }
+      );
+
+      const assignedUsers = await fetchAndValidateAssignedUsers(uniqueAssignedIds, transaction);
+      await project.setAssignedUsers(assignedUsers, { transaction });
+
+      return Project.findByPk(project.id, {
+        include: [
+          {
+            model: User,
+            as: 'creator',
+            attributes: ['id', 'name', 'email'],
+          },
+          {
+            model: User,
+            as: 'assignedUsers',
+            attributes: ['id', 'name', 'email', 'role'],
+            through: { attributes: [] },
+          },
+        ],
+        transaction,
+      });
     });
 
     res.status(201).json({
       success: true,
       message: 'Project created successfully',
-      projectId: project.id,
-      project,
+      projectId: result.id,
+      project: result,
     });
   } catch (error) {
     next(error);
@@ -40,11 +90,18 @@ const getAllProjects = async (req, res, next) => {
 
     const { count, rows } = await Project.findAndCountAll({
       where: whereClause,
+      distinct: true,
       include: [
         {
           model: User,
           as: 'creator',
           attributes: ['id', 'name', 'email'],
+        },
+        {
+          model: User,
+          as: 'assignedUsers',
+          attributes: ['id', 'name', 'email', 'role'],
+          through: { attributes: [] },
         },
       ],
       limit: parseInt(limit),
@@ -89,6 +146,12 @@ const getProjectById = async (req, res, next) => {
             },
           ],
         },
+        {
+          model: User,
+          as: 'assignedUsers',
+          attributes: ['id', 'name', 'email', 'role'],
+          through: { attributes: [] },
+        },
       ],
     });
 
@@ -109,8 +172,10 @@ const getProjectById = async (req, res, next) => {
 const updateProject = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name, description, startDate, endDate, status, budget, location } =
+    const { name, description, startDate, endDate, status, budget, location, assignedUserIds } =
       req.body;
+    const hasAssignedUsersUpdate = Array.isArray(assignedUserIds);
+    const uniqueAssignedIds = getUniqueAssignedIds(assignedUserIds);
 
     const project = await Project.findByPk(id);
     if (!project) {
@@ -129,20 +194,47 @@ const updateProject = async (req, res, next) => {
       throw new AppError('Start date must be before end date', 400);
     }
 
-    await project.update({
-      name: name || project.name,
-      description: description !== undefined ? description : project.description,
-      start_date: startDate || project.start_date,
-      end_date: endDate || project.end_date,
-      status: status || project.status,
-      budget: budget !== undefined ? budget : project.budget,
-      location: location || project.location,
+    const updatedProject = await Project.sequelize.transaction(async (transaction) => {
+      await project.update(
+        {
+          name: name || project.name,
+          description: description !== undefined ? description : project.description,
+          start_date: startDate || project.start_date,
+          end_date: endDate || project.end_date,
+          status: status || project.status,
+          budget: budget !== undefined ? budget : project.budget,
+          location: location || project.location,
+        },
+        { transaction }
+      );
+
+      if (hasAssignedUsersUpdate) {
+        const assignedUsers = await fetchAndValidateAssignedUsers(uniqueAssignedIds, transaction);
+        await project.setAssignedUsers(assignedUsers, { transaction });
+      }
+
+      return Project.findByPk(project.id, {
+        include: [
+          {
+            model: User,
+            as: 'creator',
+            attributes: ['id', 'name', 'email'],
+          },
+          {
+            model: User,
+            as: 'assignedUsers',
+            attributes: ['id', 'name', 'email', 'role'],
+            through: { attributes: [] },
+          },
+        ],
+        transaction,
+      });
     });
 
     res.status(200).json({
       success: true,
       message: 'Project updated successfully',
-      data: project,
+      data: updatedProject,
     });
   } catch (error) {
     next(error);

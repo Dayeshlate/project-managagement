@@ -19,6 +19,14 @@ const validateProjectCreate = [
   body('description').optional().trim(),
   body('startDate').isISO8601().withMessage('Valid start date is required'),
   body('endDate').isISO8601().withMessage('Valid end date is required'),
+  body('assignedUserIds')
+    .optional()
+    .isArray()
+    .withMessage('assignedUserIds must be an array of user IDs'),
+  body('assignedUserIds.*')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('Each assigned user ID must be a positive integer'),
 ];
 
 const validateProjectUpdate = [
@@ -30,6 +38,14 @@ const validateProjectUpdate = [
     .optional()
     .isIn(['planned', 'active', 'completed'])
     .withMessage('Status must be planned, active, or completed'),
+  body('assignedUserIds')
+    .optional()
+    .isArray()
+    .withMessage('assignedUserIds must be an array of user IDs'),
+  body('assignedUserIds.*')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('Each assigned user ID must be a positive integer'),
 ];
 
 const validateDPRCreate = [

@@ -1,6 +1,7 @@
 const User = require('./User');
 const Project = require('./Project');
 const DailyReport = require('./DailyReport');
+const ProjectAssignment = require('./ProjectAssignment');
 
 // Define relationships
 User.hasMany(Project, {
@@ -11,6 +12,20 @@ User.hasMany(Project, {
 Project.belongsTo(User, {
   foreignKey: 'created_by',
   as: 'creator',
+});
+
+Project.belongsToMany(User, {
+  through: ProjectAssignment,
+  foreignKey: 'project_id',
+  otherKey: 'user_id',
+  as: 'assignedUsers',
+});
+
+User.belongsToMany(Project, {
+  through: ProjectAssignment,
+  foreignKey: 'user_id',
+  otherKey: 'project_id',
+  as: 'assignedProjects',
 });
 
 Project.hasMany(DailyReport, {
@@ -37,4 +52,5 @@ module.exports = {
   User,
   Project,
   DailyReport,
+  ProjectAssignment,
 };

@@ -50,10 +50,23 @@ const SQL_STATEMENTS = [
     INDEX idx_date (date),
     UNIQUE KEY unique_daily_report (project_id, user_id, date)
   )`,
+
+  `CREATE TABLE IF NOT EXISTS project_assignments (
+    project_id INT NOT NULL,
+    user_id INT NOT NULL,
+    assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (project_id, user_id),
+    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_pa_user_id (user_id)
+  )`,
   
   `INSERT INTO users (name, email, password_hash, role) VALUES
-  ('Admin User', 'admin@projectmanager.com', '$2a$10$QQK0V8E0lQ8wR5X9fL8O0eD8Q0U6V9W8X7Y6Z5A4B3C2D1E0F9G8H7', 'admin')
-  ON DUPLICATE KEY UPDATE id = id`
+  ('Admin User', 'admin@projectmanager.com', '$2a$10$aQUDRMtG1kPPyZ68Z4Okp.hmGiwt/N6BKjJyjfPiPo6uUzll/Dr9y', 'admin')
+  ON DUPLICATE KEY UPDATE
+    password_hash = VALUES(password_hash),
+    role = VALUES(role),
+    name = VALUES(name)`
 ];
 
 const initializeDatabase = async () => {

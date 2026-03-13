@@ -30,7 +30,7 @@
           }
         },
         {
-          "name": "Login",
+          "name": "Admin Login",
           "request": {
             "method": "POST",
             "header": [
@@ -42,6 +42,27 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"admin@projectmanager.com\",\n  \"password\": \"Admin@123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "User Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"SecurePass123\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/login",
@@ -71,7 +92,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Mobile App Development\",\n  \"description\": \"Develop iOS and Android mobile application\",\n  \"startDate\": \"2024-01-15\",\n  \"endDate\": \"2024-06-30\",\n  \"budget\": 150000,\n  \"location\": \"Company Office\"\n}"
+              "raw": "{\n  \"name\": \"Mobile App Development\",\n  \"description\": \"Develop iOS and Android mobile application\",\n  \"startDate\": \"2024-01-15\",\n  \"endDate\": \"2024-06-30\",\n  \"budget\": 150000,\n  \"location\": \"Company Office\",\n  \"assignedUserIds\": [2, 3]\n}"
             },
             "url": {
               "raw": "{{base_url}}/projects",
@@ -123,9 +144,9 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/projects/1",
+              "raw": "{{base_url}}/projects/{{project_id}}",
               "host": ["{{base_url}}"],
-              "path": ["projects", "1"]
+              "path": ["projects", "{{project_id}}"]
             }
           }
         },
@@ -145,12 +166,12 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Mobile App Development - Phase 1\",\n  \"status\": \"active\",\n  \"endDate\": \"2024-07-30\"\n}"
+              "raw": "{\n  \"name\": \"Mobile App Development - Phase 1\",\n  \"status\": \"active\",\n  \"endDate\": \"2024-07-30\",\n  \"assignedUserIds\": [2, 4]\n}"
             },
             "url": {
-              "raw": "{{base_url}}/projects/1",
+              "raw": "{{base_url}}/projects/{{project_id}}",
               "host": ["{{base_url}}"],
-              "path": ["projects", "1"]
+              "path": ["projects", "{{project_id}}"]
             }
           }
         },
@@ -165,9 +186,9 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/projects/1",
+              "raw": "{{base_url}}/projects/{{project_id}}",
               "host": ["{{base_url}}"],
-              "path": ["projects", "1"]
+              "path": ["projects", "{{project_id}}"]
             }
           }
         }
@@ -195,9 +216,9 @@
               "raw": "{\n  \"date\": \"2024-01-15\",\n  \"work_description\": \"Completed UI mockups for login and dashboard screens. Conducted design review with stakeholders.\",\n  \"weather\": \"Sunny\",\n  \"worker_count\": 4\n}"
             },
             "url": {
-              "raw": "{{base_url}}/projects/1/dpr",
+              "raw": "{{base_url}}/projects/{{project_id}}/dpr",
               "host": ["{{base_url}}"],
-              "path": ["projects", "1", "dpr"]
+              "path": ["projects", "{{project_id}}", "dpr"]
             }
           }
         },
@@ -212,9 +233,9 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/projects/1/dpr",
+              "raw": "{{base_url}}/projects/{{project_id}}/dpr",
               "host": ["{{base_url}}"],
-              "path": ["projects", "1", "dpr"],
+              "path": ["projects", "{{project_id}}", "dpr"],
               "query": [
                 {
                   "key": "date",
@@ -248,6 +269,11 @@
     {
       "key": "token",
       "value": "",
+      "type": "string"
+    },
+    {
+      "key": "project_id",
+      "value": "1",
       "type": "string"
     }
   ]
