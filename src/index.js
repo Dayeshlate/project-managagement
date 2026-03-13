@@ -4,7 +4,6 @@ const sequelize = require('./config/database');
 const errorHandler = require('./middleware/errorHandler');
 const authRoutes = require('./routes/authRoutes');
 const projectRoutes = require('./routes/projectRoutes');
-const dprRoutes = require('./routes/dprRoutes');
 
 const app = express();
 
@@ -24,7 +23,6 @@ app.get('/health', (req, res) => {
 // Routes
 app.use('/auth', authRoutes);
 app.use('/projects', projectRoutes);
-app.use('/projects/:id/dpr', dprRoutes);
 
 // 404 handler
 app.use((req, res) => {

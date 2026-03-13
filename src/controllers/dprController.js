@@ -1,4 +1,4 @@
-const { DailyReport, User } = require('../models');
+const { DailyReport, Project, User } = require('../models');
 const AppError = require('../utils/errors');
 
 const createDailyReport = async (req, res, next) => {
@@ -6,6 +6,12 @@ const createDailyReport = async (req, res, next) => {
     const { id: projectId } = req.params;
     const { date, work_description, weather, worker_count } = req.body;
     const userId = req.user.userId;
+
+    // Validate project exists
+    const project = await Project.findByPk(projectId);
+    if (!project) {
+      throw new AppError(`Project with ID ${projectId} not found`, 404);
+    }
 
     const dailyReport = await DailyReport.create({
       project_id: projectId,

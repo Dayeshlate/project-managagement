@@ -13,6 +13,7 @@ const {
   validatePaginationQuery,
   handleValidationErrors,
 } = require('../utils/validators');
+const dprRoutes = require('./dprRoutes');
 
 const router = express.Router();
 
@@ -42,6 +43,13 @@ router.get(
   handleValidationErrors,
   getAllProjects
 );
+
+/**
+ * @route   POST/GET /projects/:id/dpr
+ * @desc    Daily Progress Reports
+ * @access  Private
+ */
+router.use('/:id/dpr', dprRoutes);
 
 /**
  * @route   GET /projects/:id
