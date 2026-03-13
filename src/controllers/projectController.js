@@ -1,4 +1,4 @@
-const { Project, User } = require('../models');
+const { Project, User, DailyReport } = require('../models');
 const AppError = require('../utils/errors');
 
 const createProject = async (req, res, next) => {
@@ -79,7 +79,7 @@ const getProjectById = async (req, res, next) => {
           attributes: ['id', 'name', 'email'],
         },
         {
-          model: 'DailyReport',
+          model: DailyReport,
           as: 'dailyReports',
           include: [
             {

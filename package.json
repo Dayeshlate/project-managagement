@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "migrate": "node migrations/init.js"
+    "migrate": "node migrations/init.js",
+    "update-role": "node scripts/updateUserRole.js"
   },
   "keywords": ["node", "express", "mysql", "sequelize", "api"],
   "author": "",
